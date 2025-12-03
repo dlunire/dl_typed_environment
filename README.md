@@ -16,8 +16,6 @@ También puede visualizar el ejemplo en la siguiente imagen:
 
 ![Vista de código](https://i.ibb.co/kHqtrs0/feature-x.jpg "Vista previa")
 
-Puede ver un ejemplo en [YouTube](https://www.youtube.com/watch?v=GE7avMluubM "Ver ejemplo de código")
-
 ## Requerimientos
 
 Solo debes crear un archivo con el nombre `.env.type`.
