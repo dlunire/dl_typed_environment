@@ -32,7 +32,7 @@ Por ahora no se ha encontrado problemas.
 
 Este es el primer lanzamiento.
 
-> Si notas algún problema, por favor, notifíquelo a `davidlunamontilla@gmail.com`.
+> Si notas algún problema, por favor, notifíquelo a `dlunireframework@gmail.com`.
 
 ### 1.0.0
 
