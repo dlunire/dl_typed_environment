@@ -4,10 +4,10 @@
   "description": "Variables con definición de tipo",
   "version": "0.0.7",
   "repository": {
-    "url": "https://github.com/dlunamontilla/dl_typed_environment"
+    "url": "https://github.com/dlunire/dl_typed_environment"
   },
   "icon": "images/env.png",
-  "publisher": "dlunamontilla",
+  "publisher": "dlunire",
   "engines": {
     "vscode": "^1.82.0",
     "code-insiders": "^1.82.0",
