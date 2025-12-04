@@ -2,12 +2,13 @@
   "name": "dlunire-envtype",
   "displayName": "DL Typed Environment (Rebuild)",
   "description": "Variables con definición de tipo",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "repository": {
     "url": "https://github.com/dlunire/dl_typed_environment"
   },
   "icon": "images/env.png",
   "publisher": "dlunire",
+  "main": "out/extension.js",
   "engines": {
     "vscode": "^1.82.0",
     "code-insiders": "^1.82.0",
@@ -19,10 +20,10 @@
   "contributes": {
     "languages": [
       {
-        "id": "envtype",
+        "id": "dlunire-envtype",
         "aliases": [
           "DL Typed Environment",
-          "envtype"
+          "dlunire-envtype"
         ],
         "extensions": [
           ".env.type",
@@ -35,10 +36,19 @@
     ],
     "grammars": [
       {
-        "language": "envtype",
+        "language": "dlunire-envtype",
         "scopeName": "source.env.type",
         "path": "./syntaxes/envtype.tmLanguage.json"
       }
     ]
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vscode": "^1.1.34"
+  },
+  "scripts": {
+    "vscode:prepublish": "tsc",
+    "build": "tsc -p .",
+    "watch": "tsc -watch"
   }
 }
