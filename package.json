@@ -9,6 +9,7 @@
   "icon": "images/env.png",
   "publisher": "dlunire",
   "main": "out/extension.js",
+  "activationEvents": ["onLanguage:dlunire-envtype"],
   "engines": {
     "vscode": "^1.82.0",
     "code-insiders": "^1.82.0",
