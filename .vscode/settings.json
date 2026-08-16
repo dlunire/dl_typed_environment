@@ -1,0 +1,4 @@
+{
+    "js/ts.experimental.useTsgo": false,
+    "npm.packageManager": "bun"
+}
