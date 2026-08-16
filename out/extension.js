@@ -342,6 +342,8 @@ function activate(context) {
         }
         diagnosticCollection.set(document.uri, diagnostics);
     }
+    // 5. AUTO-ESPACIADO EN BLOQUES JSDoc
+    registerJsdocAutoSpace(context);
     // Eventos
     vscode.workspace.onDidChangeTextDocument(e => updateDiagnostics(e.document), null, context.subscriptions);
     vscode.window.onDidChangeActiveTextEditor(editor => { if (editor)
@@ -640,6 +642,54 @@ function validateLiteral(value, targetType, isStringLiteral, p, diagnostics) {
     if (!valid) {
         addError(diagnostics, p.line, start, end, msg);
     }
+}
+// ==========================================
+// AUTO-ESPACIADO PARA BLOQUES /** */
+// ==========================================
+/**
+ * Cuando el usuario completa "/**" y el propio autoClosingPair del
+ * language-configuration.json ya insertó " *\/" a la derecha del cursor,
+ * este listener inserta el espacio faltante a la izquierda, dejando el
+ * cursor perfectamente centrado: /** | *\/
+ *
+ * No usamos contentChanges.length === 1 como filtro estricto porque, según
+ * la versión de VS Code, la inserción del '*' tecleado y la inserción del
+ * cierre " *\/" pueden llegar como dos entradas en el mismo evento. Por eso
+ * buscamos específicamente la entrada que insertó el '*'.
+ */
+function registerJsdocAutoSpace(context) {
+    const disposable = vscode.workspace.onDidChangeTextDocument(event => {
+        if (event.document.languageId !== LANGUAGE_ID)
+            return;
+        if (event.contentChanges.length === 0)
+            return;
+        const change = event.contentChanges.find(c => c.text === '*' && c.rangeLength === 0);
+        if (!change)
+            return;
+        const editor = vscode.window.activeTextEditor;
+        if (!editor || editor.document !== event.document)
+            return;
+        const position = change.range.start.translate(0, 1);
+        const lineText = event.document.lineAt(position.line).text;
+        const beforeCursor = lineText.slice(0, position.character);
+        const afterCursor = lineText.slice(position.character);
+        // ¿Se acaba de completar "/**" y ya existe " */" a la derecha
+        // (insertado por el autoClosingPair)?
+        if (!beforeCursor.endsWith('/**'))
+            return;
+        if (!afterCursor.startsWith(' */'))
+            return;
+        if (beforeCursor.endsWith('/** '))
+            return; // evita duplicar el espacio
+        editor.edit(editBuilder => editBuilder.insert(position, ' '), { undoStopBefore: false, undoStopAfter: false } // un solo "Ctrl+Z" deshace todo
+        ).then(success => {
+            if (!success)
+                return;
+            const newPosition = position.translate(0, 1);
+            editor.selection = new vscode.Selection(newPosition, newPosition);
+        });
+    });
+    context.subscriptions.push(disposable);
 }
 // ==========================================
 // HELPER
