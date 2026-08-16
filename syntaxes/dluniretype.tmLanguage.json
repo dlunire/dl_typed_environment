@@ -1,0 +1,144 @@
+{
+	"name": "DL Type Environment",
+	"scopeName": "source.type",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#type-keyword"
+		},
+		{
+			"include": "#colon"
+		},
+		{
+			"include": "#operator-assign"
+		},
+		{
+			"include": "#operator-arithmetic"
+		},
+		{
+			"include": "#boolean"
+		},
+		{
+			"include": "#uuid"
+		},
+		{
+			"include": "#email"
+		},
+		{
+			"include": "#numeric"
+		},
+		{
+			"include": "#variable"
+		},
+		{
+			"include": "#invalid"
+		}
+	],
+	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.number-sign dlunire.line-number-sign",
+					"match": "#.*$"
+				},
+				{
+					"name": "comment.line.double-slash dlunire.double-slash",
+					"match": "//.*$"
+				},
+				{
+					"name": "comment.block.documentation dlunire.block-documentation",
+					"begin": "/\\*\\*",
+					"end": "\\*/"
+				},
+				{
+					"name": "comment.block dlunire.block-comment",
+					"begin": "/\\*",
+					"end": "\\*/"
+				}
+			]
+		},
+		"strings": {
+			"patterns": [
+				{
+					"name": "string.quoted.double dlunire.quoted-double",
+					"begin": "\"",
+					"end": "\"",
+					"patterns": [
+						{
+							"name": "constant.character.escape dlunire.escape",
+							"match": "\\\\."
+						}
+					]
+				},
+				{
+					"name": "string.quoted.single dlunire.quoted-single",
+					"begin": "'",
+					"end": "'",
+					"patterns": [
+						{
+							"name": "constant.character.escape dlunire.escape",
+							"match": "\\\\."
+						}
+					]
+				},
+				{
+					"name": "string.quoted.other.backtick dlunire.quoted-backtick",
+					"begin": "`",
+					"end": "`"
+				}
+			]
+		},
+		"variable": {
+			"comment": "Solo mayusculas y guion bajo. Nunca inicia con '_'. Puede terminar en '_' y repetirse (VARIABLE_, VARIABLE_CON_NOMBRE).",
+			"match": "\\b[A-Z]+(?:_[A-Z]+)*_*\\b",
+			"name": "variable.other.readwrite dlunire.varname"
+		},
+		"colon": {
+			"comment": "Unico separador de tipo admitido.",
+			"match": ":",
+			"name": "punctuation.separator.key-value dlunire.colon"
+		},
+		"type-keyword": {
+			"comment": "Tipos primitivos del lenguaje.",
+			"match": "\\b(uuid|numeric|integer|float|boolean|email|string)\\b",
+			"name": "storage.type dlunire.type"
+		},
+		"operator-assign": {
+			"match": "=",
+			"name": "keyword.operator.assignment dlunire.operator.assign"
+		},
+		"operator-arithmetic": {
+			"comment": "Se agrego '/' porque aparece en el archivo de ejemplo (PI / 2.0) y no estaba en la gramatica original.",
+			"match": "[+\\-*/<>]",
+			"name": "keyword.operator.arithmetic dlunire.operator.arithmetic"
+		},
+		"boolean": {
+			"match": "\\b(true|false)\\b",
+			"name": "constant.language.boolean dlunire.boolean"
+		},
+		"numeric": {
+			"comment": "Cubre integer y float con una sola regla, ya que numeric admite ambos.",
+			"match": "-?\\b\\d+(\\.\\d+)?\\b",
+			"name": "constant.numeric dlunire.numeric"
+		},
+		"uuid": {
+			"comment": "Se corrigio el typo del original: [0-f0-9] -> [a-f0-9].",
+			"match": "\\b[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\\b",
+			"name": "constant.other.uuid dlunire.uuid"
+		},
+		"email": {
+			"match": "\\b[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}@[a-zA-Z0-9][a-zA-Z0-9.-]+\\.[a-zA-Z]{2,10}\\b",
+			"name": "constant.other.email dlunire.email"
+		},
+		"invalid": {
+			"comment": "Cualquier caracter no whitespace que no calzo con ninguna regla anterior.",
+			"match": "\\S",
+			"name": "invalid.illegal dlunire.illegal"
+		}
+	}
+}

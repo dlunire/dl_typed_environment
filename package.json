@@ -1,55 +1,64 @@
 {
-  "name": "dlunire-envtype",
-  "displayName": "DL Typed Environment (Rebuild)",
-  "description": "Variables con definición de tipo",
-  "version": "0.0.8",
-  "repository": {
-    "url": "https://github.com/dlunire/dl_typed_environment"
-  },
-  "icon": "images/env.png",
-  "publisher": "dlunire",
-  "main": "out/extension.js",
-  "activationEvents": ["onLanguage:dlunire-envtype"],
-  "engines": {
-    "vscode": "^1.82.0",
-    "code-insiders": "^1.82.0",
-    "vscodium": "^1.82.0"
-  },
-  "categories": [
-    "Programming Languages"
-  ],
-  "contributes": {
-    "languages": [
-      {
-        "id": "dlunire-envtype",
-        "aliases": [
-          "DL Typed Environment",
-          "dlunire-envtype"
-        ],
-        "extensions": [
-          ".env.type",
-          ".env.type.example",
-          ".type",
-          ".type.example"
-        ],
-        "configuration": "./language-configuration.json"
-      }
+    "name": "dlunire-envtype",
+    "displayName": "DL Typed Environment (Rebuild)",
+    "description": "Variables con definición de tipo",
+    "version": "0.0.9",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dlunire/dl_typed_environment"
+    },
+    "icon": "images/env.png",
+    "publisher": "dlunire",
+    "main": "out/extension.js",
+    "activationEvents": [
+        "onLanguage:dlunire-envtype"
     ],
-    "grammars": [
-      {
-        "language": "dlunire-envtype",
-        "scopeName": "source.env.type",
-        "path": "./syntaxes/envtype.tmLanguage.json"
-      }
-    ]
-  },
-  "devDependencies": {
-    "typescript": "^5.9.3",
-    "vscode": "^1.1.34"
-  },
-  "scripts": {
-    "vscode:prepublish": "tsc",
-    "build": "tsc -p .",
-    "watch": "tsc -watch"
-  }
+    "engines": {
+        "vscode": "^1.82.0",
+        "code-insiders": "^1.82.0",
+        "vscodium": "^1.82.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "dlunire-envtype",
+                "aliases": [
+                    "DL Typed Environment",
+                    "dlunire-envtype"
+                ],
+                "extensions": [
+                    ".env.type",
+                    ".env.type.example",
+                    ".type",
+                    ".type.example"
+                ],
+                "firstLine": "^[A-Z]+(?:_[A-Z]+)*_*\\s*:\\s*(string|integer|float|numeric|boolean|uuid|email)",
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "dlunire-envtype",
+                "scopeName": "source.type",
+                "path": "./syntaxes/dluniretype.tmLanguage.json"
+            }
+        ]
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3",
+        "vscode": "^1.1.37",
+        "vsce": "^2.15.0",
+        "ovsx": "^1.1.1"
+    },
+    "scripts": {
+        "vscode:prepublish": "tsc",
+        "build": "tsc -p .",
+        "watch": "tsc -watch",
+        "package": "vsce package",
+        "publish:vscode": "vsce publish",
+        "publish:openvsx": "ovsx publish *.vsix"
+    }
 }

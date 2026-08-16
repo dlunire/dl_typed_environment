@@ -1,46 +1,70 @@
-# Change Log
+# Registro de Cambios
 
-All notable changes to the `env-type` extension will be documented in this file.
+Todos los cambios importantes de la extensión `env-type` se documentarán en este archivo.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this document.
+Consulta [Keep a Changelog](http://keepachangelog.com/) para recomendaciones sobre cómo estructurar este documento.
 
 ---
 
-## [Unreleased]
+## [Sin publicar]
+
+---
+
+## [0.0.9] – 2026-08-16
+
+### Corregido
+
+* Se corrigió el desajuste entre `grammars.scopeName` en `package.json` (`source.env.type`) y el `scopeName` real declarado en la gramática (`source.type`), que impedía silenciosamente que el resaltado de sintaxis se activara.
+* Se corrigió un typo en el patrón de `uuid` (`[0-f0-9]` → `[a-f0-9]`) que hacía fallar el reconocimiento de UUIDs válidos.
+* Se corrigió un valor inválido de `lineComment` en `language-configuration.json` (era un objeto; VS Code requiere un string plano), lo que desactivaba silenciosamente el atajo `Ctrl+/` para comentar líneas.
+* Se corrigió la condición de disparo del autocompletado (`IntelliSense`) en `CompletionItemProvider`: antes se activaba con cualquier `:` en la línea (incluso dentro de valores ya escritos), en vez de solo justo después de declarar una variable.
+* Se corrigió la referencia `path` de la gramática en `package.json` para que coincida con el nombre real del archivo (`syntaxes/dluniretype.tmLanguage.json`).
+
+### Agregado
+
+* Se agregó `/` como operador aritmético reconocido en la gramática, acorde al uso real en expresiones (ej. `PI_VALUE / 2.0`).
+* Se agregó un scope personalizado `dlunire.*` apilado junto a cada scope estándar de TextMate (comentarios, strings, variables, operadores y literales), permitiendo un theming específico de DLUnire sin perder compatibilidad con temas de color de terceros.
+* Se agregó `repository.type: "git"` a los metadatos de `package.json`.
+
+### Cambiado
+
+* Se refactorizó el `repository` de la gramática: de patrones duplicados y anclados a fin de línea por cada tipo, a tokens léxicos independientes (`variable`, `colon`, `type-keyword`, `operator-assign`, `operator-arithmetic` y literales), permitiendo que expresiones que referencian otras variables (ej. `RESULT: integer = COUNT + 25`) se tokenicen correctamente.
+* Se ajustó la lógica de inserción del autocompletado para evitar un espacio duplicado cuando el usuario ya había escrito uno después de `:`.
+* Se eliminó una verificación redundante `if (type in description)` en `extension.ts`, ya que siempre era verdadera por construcción.
 
 ---
 
 ## [0.0.8] – 2025-12-04
 
-### Added
+### Agregado
 
-* Implemented **IntelliSense autocompletion** for variable types defined in `env.type`.
-* `Types` interface and `description` dictionary integrated to provide tooltip documentation for supported types.
-* Initial `CompletionItemProvider` established for future language expansion (parser, validation, formatting).
+* Se implementó **autocompletado IntelliSense** para los tipos de variable definidos en `env.type`.
+* Se integró la interfaz `Types` y el diccionario `description` para ofrecer documentación en tooltips de los tipos soportados.
+* Se estableció un `CompletionItemProvider` inicial para futura expansión del lenguaje (parser, validación, formateo).
 
-### Changed
+### Cambiado
 
-* Moved towards a language-tooling oriented architecture, preparing the ground for parser refactor and extended DSL.
-* Internal structure reorganized to allow future `rust-analyzer style` evolutions.
+* Se avanzó hacia una arquitectura orientada a herramientas de lenguaje, preparando el terreno para el refactor del parser y la extensión del DSL.
+* Se reorganizó la estructura interna para permitir futuras evoluciones al estilo `rust-analyzer`.
 
-### Fixed
+### Corregido
 
-* None.
+* Ninguno.
 
 ---
 
 ## [0.0.7] – 2025-02-XX
 
-### Changed
+### Cambiado
 
-* Removed the `productIconThemes` contribution block to ensure the extension is not treated as a theme or icon provider.
-* The extension now operates exclusively as a syntax highlighter for `.env.type` files.
-* Updated the contribution manifest to strictly declare language and grammar definitions only.
+* Se eliminó el bloque de contribución `productIconThemes` para asegurar que la extensión no sea tratada como un tema o proveedor de íconos.
+* La extensión ahora opera exclusivamente como resaltador de sintaxis para archivos `.env.type`.
+* Se actualizó el manifiesto de contribución para declarar estrictamente solo definiciones de lenguaje y gramática.
 
-### Fixed
+### Corregido
 
-* Corrected unintended behavior where the extension was being classified as a theme due to previous configuration.
+* Se corrigió un comportamiento no intencionado donde la extensión era clasificada como tema debido a una configuración previa.
 
-### Added
+### Agregado
 
-* None.
+* Ninguno.

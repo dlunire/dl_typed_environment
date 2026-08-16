@@ -58,53 +58,125 @@ const types = [
     'email'
 ];
 /**
+ * Expresión que reconoce un nombre de variable válido seguido de ':' y espacios opcionales.
+ */
+const VARIABLE_COLON_PATTERN = /^[A-Z]+(?:_[A-Z]+)*_*:\s*$/;
+/**
+ * Expresión para extraer componentes en la validación del Linter:
+ * Grupo 1: Nombre de la variable
+ * Grupo 2: Tipo declarado
+ * Grupo 3: Valor (con o sin espacios, que luego será procesado)
+ */
+const VARIABLE_ASSIGNMENT_PATTERN = /^([A-Z]+(?:_[A-Z]+)*_*)\s*:\s*([a-z]+)\s*=\s*(.+)$/;
+/**
  * Desactiva la extensión.
- * Se llama cuando la extensión es desactivada por VSCode.
  */
 function deactivate() {
     console.log('DL Typed Environment Extension Deactivated');
 }
 /**
  * Activa la extensión DL Typed Environment.
- * Registra el autocompletado de tipos para variables cuando se detecta un ":".
- *
- * @param context Contexto de la extensión proporcionado por VSCode
+ * Registra autocompletado y linter semántico.
  */
 function activate(context) {
-    /** Selector de lenguaje para la extensión */
     const selector = 'dlunire-envtype';
-    /**
-     * Proveedor de autocompletado
-     */
+    // ==========================================
+    // 1. PROVEEDOR DE AUTOCOMPLETADO
+    // ==========================================
     const providerParam = {
-        /**
-         * Proporciona los items de autocompletado.
-         *
-         * @param document Documento actual en el editor
-         * @param position Posición del cursor en el documento
-         * @returns Lista de sugerencias o undefined si no aplica
-         */
         provideCompletionItems(document, position) {
             const linePrefix = document.lineAt(position).text.substring(0, position.character);
-            // Solo mostrar sugerencias si hay ":" en la línea (después del nombre de variable)
-            if (!linePrefix.includes(':')) {
+            if (!VARIABLE_COLON_PATTERN.test(linePrefix)) {
                 return undefined;
             }
+            const needsLeadingSpace = !linePrefix.endsWith(' ');
             return types.map(type => {
                 const item = new vscode.CompletionItem(type, vscode.CompletionItemKind.TypeParameter);
                 item.detail = `Tipo primitivo: ${type}`;
-                item.insertText = ` ${type} = `;
-                if (type in description) {
-                    item.documentation = new vscode.MarkdownString(description[type]);
-                }
+                item.insertText = `${needsLeadingSpace ? ' ' : ''}${type} = `;
+                item.documentation = new vscode.MarkdownString(description[type]);
                 return item;
             });
         }
     };
-    /** Caracteres que desencadenan el autocompletado */
     const chars = [":"];
-    /** Registro del proveedor de autocompletado en VSCode */
     const provider = vscode.languages.registerCompletionItemProvider(selector, providerParam, ...chars);
     context.subscriptions.push(provider);
+    // ==========================================
+    // 2. LINTER SEMÁNTICO (Diagnostics)
+    // ==========================================
+    const diagnosticCollection = vscode.languages.createDiagnosticCollection(selector);
+    context.subscriptions.push(diagnosticCollection);
+    function updateDiagnostics(document) {
+        if (document.languageId !== selector) {
+            return;
+        }
+        const diagnostics = [];
+        for (let i = 0; i < document.lineCount; i++) {
+            const line = document.lineAt(i);
+            const match = line.text.match(VARIABLE_ASSIGNMENT_PATTERN);
+            if (match) {
+                const declaredType = match[2];
+                const rawValue = match[3].trim();
+                // Eliminar posibles comentarios al final de la línea (# o //)
+                let value = rawValue.split(/\s+(?:#|\/\/)/)[0].trim();
+                let stringValue = value;
+                // Remover comillas envolventes para evaluar strings puros (como uuid o email)
+                if (/^["'].*["']$/.test(value)) {
+                    stringValue = value.slice(1, -1);
+                }
+                // Ignorar evaluación si es una expresión (tiene operadores) o una referencia a otra variable
+                if (/^[A-Z0-9_]+$/.test(value) || /[\+\-\*\/]/.test(value)) {
+                    continue;
+                }
+                let isValid = true;
+                switch (declaredType) {
+                    case 'integer':
+                        isValid = /^-?\d+$/.test(value);
+                        break;
+                    case 'float':
+                        isValid = /^-?\d+\.\d+$/.test(value);
+                        break;
+                    case 'numeric':
+                        isValid = /^-?\d+(\.\d+)?$/.test(value);
+                        break;
+                    case 'boolean':
+                        isValid = /^(true|false)$/.test(value);
+                        break;
+                    case 'uuid':
+                        isValid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(stringValue);
+                        break;
+                    case 'email':
+                        isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(stringValue);
+                        break;
+                    case 'string':
+                        isValid = true; // Todo es válido como string léxicamente
+                        break;
+                }
+                if (!isValid) {
+                    // Calcular el rango para subrayar específicamente el valor erróneo
+                    const startIndex = line.text.lastIndexOf(rawValue);
+                    const range = new vscode.Range(i, startIndex, i, startIndex + rawValue.length);
+                    const diagnostic = new vscode.Diagnostic(range, `Error semántico: El valor asignado no corresponde con el tipo declarado '${declaredType}'.`, vscode.DiagnosticSeverity.Error);
+                    diagnostics.push(diagnostic);
+                }
+            }
+        }
+        diagnosticCollection.set(document.uri, diagnostics);
+    }
+    // Actualizar linter mientras se escribe
+    vscode.workspace.onDidChangeTextDocument(event => {
+        updateDiagnostics(event.document);
+    }, null, context.subscriptions);
+    // Actualizar linter al cambiar de archivo activo
+    vscode.window.onDidChangeActiveTextEditor(editor => {
+        if (editor) {
+            updateDiagnostics(editor.document);
+        }
+    }, null, context.subscriptions);
+    // Ejecución inicial al activar la extensión
+    if (vscode.window.activeTextEditor) {
+        updateDiagnostics(vscode.window.activeTextEditor.document);
+    }
 }
 //# sourceMappingURL=extension.js.map
