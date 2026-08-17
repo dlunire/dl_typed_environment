@@ -873,6 +873,6 @@ function addError(
     const e = Math.max(s + 1, endCol);
     const range = new vscode.Range(line, s, line, e);
     const diagnostic = new vscode.Diagnostic(range, message, vscode.DiagnosticSeverity.Error);
-    diagnostic.code = "DL_SYNTAX_ERROR";
+    diagnostic.code = "DLUNIRE_SYNTAX_ERROR";
     diagnostics.push(diagnostic);
 }

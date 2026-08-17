@@ -32,4 +32,4 @@ THRESHOLD_CHECK: boolean = TOTAL_CONNECTIONS < MAX_CONNECTIONS
  * y que puede ser extendida para explicar el propósito de una variable
  * en específico. Al activarse, permite habilitar flujos de registro detallados.
  */
-TEST: boolean = false
+TEST: boolean = fadlse
