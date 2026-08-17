@@ -65,14 +65,8 @@ const VAR_NAME_PATTERN = /^[A-Z]+(?:_[A-Z]+)*_*$/;
 const VAR_WORD_PATTERN = /[A-Z]+(?:_[A-Z]+)*_*/;
 /** Reconoce la línea de declaración de una variable, para localizarla desde el hover. */
 const DECLARATION_LINE_PATTERN = /^\s*([A-Z]+(?:_[A-Z]+)*_*)\s*:\s*(string|integer|float|numeric|boolean|uuid|email)\b/;
-/**
- * Reconoce una expresión aritmética REAL: una secuencia de operandos (número o
- * VARIABLE) separados por operadores. A diferencia de "contiene un caracter de
- * operador en algún lugar", esto evita falsos positivos con valores que
- * legítimamente contienen '-' sin ser una resta, como un UUID sin comillas
- * (ej. 2302ea2b-99b0-11f1-b138-c4346b4ea7a9).
- */
-const EXPRESSION_PATTERN = /^-?(?:\d+(?:\.\d+)?|[A-Z]+(?:_[A-Z]+)*_*)(?:\s*[+\-*/<>]\s*-?(?:\d+(?:\.\d+)?|[A-Z]+(?:_[A-Z]+)*_*))+$/;
+const ARITHMETIC_EXPRESSION_PATTERN = /^-?(?:\d+(?:\.\d+)?|[A-Z]+(?:_[A-Z]+)*_*)(?:\s*[+\-*/]\s*-?(?:\d+(?:\.\d+)?|[A-Z]+(?:_[A-Z]+)*_*))+$/;
+const COMPARISON_EXPRESSION_PATTERN = /^-?(?:\d+(?:\.\d+)?|[A-Z]+(?:_[A-Z]+)*_*)\s*(?:<|>)\s*-?(?:\d+(?:\.\d+)?|[A-Z]+(?:_[A-Z]+)*_*)$/;
 function deactivate() {
     console.log('DL Typed Environment Extension Deactivated');
 }
@@ -550,10 +544,12 @@ function validateSemantics(p, symbols, diagnostics) {
     const { start, end } = p.valueRange;
     const isStringLiteral = /^(["'`]).*\1$/.test(value) && value.length >= 2;
     const isReference = VAR_NAME_PATTERN.test(value);
-    // Una expresión aritmética exige una secuencia real de operandos (número o
-    // VARIABLE) separados por operadores — no basta con "contiene un guion".
-    // Esto evita que un UUID sin comillas (con varios '-') se confunda con una resta.
-    const isExpression = !isStringLiteral && !isReference && EXPRESSION_PATTERN.test(value);
+    const isArithmeticExpression = !isStringLiteral &&
+        !isReference &&
+        ARITHMETIC_EXPRESSION_PATTERN.test(value);
+    const isComparisonExpression = !isStringLiteral &&
+        !isReference &&
+        COMPARISON_EXPRESSION_PATTERN.test(value);
     // ---- 1. Referencia a otra variable ----
     if (isReference) {
         const ref = symbols.get(value);
@@ -566,8 +562,16 @@ function validateSemantics(p, symbols, diagnostics) {
         }
         return;
     }
+    if (isComparisonExpression) {
+        if (targetType !== 'boolean') {
+            addError(diagnostics, p.line, start, end, `Error de tipos: las expresiones de comparación producen un valor 'boolean', no '${targetType}'.`);
+            return;
+        }
+        validateComparison(value, symbols, p, diagnostics);
+        return;
+    }
     // ---- 2. Expresión aritmética ----
-    if (isExpression) {
+    if (isArithmeticExpression) {
         if (!NUMERIC_TYPES.has(targetType)) {
             addError(diagnostics, p.line, start, end, `Error de tipos: las expresiones aritméticas solo son válidas para tipos numéricos, no para '${targetType}'.`);
             return;
@@ -580,7 +584,10 @@ function validateSemantics(p, symbols, diagnostics) {
 }
 /** Valida cada operando de una expresión aritmética. */
 function validateExpression(expr, targetType, symbols, p, diagnostics) {
-    const operands = expr.split(/[+\-*/<>]/).map(s => s.trim()).filter(s => s.length > 0);
+    const operands = expr
+        .split(/[+\-*/]/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
     for (const op of operands) {
         if (VAR_NAME_PATTERN.test(op)) {
             const ref = symbols.get(op);
@@ -595,6 +602,29 @@ function validateExpression(expr, targetType, symbols, p, diagnostics) {
         }
         else if (!/^-?\d+(\.\d+)?$/.test(op)) {
             addError(diagnostics, p.line, p.valueRange.start, p.valueRange.end, `Operando inválido en la expresión aritmética: '${op}'.`);
+            return;
+        }
+    }
+}
+function validateComparison(expr, symbols, p, diagnostics) {
+    const operands = expr
+        .split(/[<>]/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+    for (const op of operands) {
+        if (VAR_NAME_PATTERN.test(op)) {
+            const ref = symbols.get(op);
+            if (!ref) {
+                addError(diagnostics, p.line, p.valueRange.start, p.valueRange.end, `Referencia inválida en la comparación: la variable '${op}' no ha sido declarada.`);
+                return;
+            }
+            if (!NUMERIC_TYPES.has(ref.type)) {
+                addError(diagnostics, p.line, p.valueRange.start, p.valueRange.end, `Error de tipos: '${op}' es de tipo '${ref.type}' y no puede utilizarse en una comparación numérica.`);
+                return;
+            }
+        }
+        else if (!/^-?\d+(\.\d+)?$/.test(op)) {
+            addError(diagnostics, p.line, p.valueRange.start, p.valueRange.end, `Operando inválido en la comparación: '${op}'.`);
             return;
         }
     }

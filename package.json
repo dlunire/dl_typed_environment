@@ -1,6 +1,6 @@
 {
     "name": "dlunire-envtype",
-    "displayName": "DL Typed Environment (Rebuild)",
+    "displayName": "DL Typed Environment",
     "description": "Variables con definición de tipo",
     "version": "0.0.9",
     "repository": {
