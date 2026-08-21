@@ -1,4 +1,20 @@
 {
     "js/ts.experimental.useTsgo": false,
-    "npm.packageManager": "bun"
+    "npm.packageManager": "bun",
+
+    "editor.tokenColorCustomizations": {
+        "types": "#00ff00",
+        "strings": "#ffff00",
+        "variables": "#00ffff",
+        "textMateRules": [
+            {
+                "scope": [
+                    "constant"
+                ],
+                "settings": {
+                    "foreground": "#00f0ff"
+                }
+            }
+        ]
+    }
 }
