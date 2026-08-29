@@ -2,7 +2,7 @@
     "name": "dlunire-envtype",
     "displayName": "DL Typed Environment (Rebuild)",
     "description": "Variables con definición de tipo",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "repository": {
         "type": "git",
         "url": "https://github.com/dlunire/dl_typed_environment"

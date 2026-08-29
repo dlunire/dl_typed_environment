@@ -10,7 +10,7 @@ Consulta [Keep a Changelog](http://keepachangelog.com/) para recomendaciones sob
 
 ---
 
-## [0.0.9] – 2026-08-29
+## [0.0.10] – 2026-08-29
 
 ### Agregado
 
