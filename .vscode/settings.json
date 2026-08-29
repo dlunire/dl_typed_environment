@@ -3,7 +3,7 @@
     "npm.packageManager": "bun",
 
     "editor.tokenColorCustomizations": {
-        "types": "#00ff00",
+        "types": "#00ffff",
         "strings": "#ffff00",
         "variables": "#00ffff",
         "textMateRules": [

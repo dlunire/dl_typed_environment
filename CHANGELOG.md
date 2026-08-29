@@ -10,27 +10,33 @@ Consulta [Keep a Changelog](http://keepachangelog.com/) para recomendaciones sob
 
 ---
 
-## [0.0.9] – 2026-08-16
-
-### Corregido
-
-* Se corrigió el desajuste entre `grammars.scopeName` en `package.json` (`source.env.type`) y el `scopeName` real declarado en la gramática (`source.type`), que impedía silenciosamente que el resaltado de sintaxis se activara.
-* Se corrigió un typo en el patrón de `uuid` (`[0-f0-9]` → `[a-f0-9]`) que hacía fallar el reconocimiento de UUIDs válidos.
-* Se corrigió un valor inválido de `lineComment` en `language-configuration.json` (era un objeto; VS Code requiere un string plano), lo que desactivaba silenciosamente el atajo `Ctrl+/` para comentar líneas.
-* Se corrigió la condición de disparo del autocompletado (`IntelliSense`) en `CompletionItemProvider`: antes se activaba con cualquier `:` en la línea (incluso dentro de valores ya escritos), en vez de solo justo después de declarar una variable.
-* Se corrigió la referencia `path` de la gramática en `package.json` para que coincida con el nombre real del archivo (`syntaxes/dluniretype.tmLanguage.json`).
+## [0.0.9] – 2026-08-29
 
 ### Agregado
 
-* Se agregó `/` como operador aritmético reconocido en la gramática, acorde al uso real en expresiones (ej. `PI_VALUE / 2.0`).
-* Se agregó un scope personalizado `dlunire.*` apilado junto a cada scope estándar de TextMate (comentarios, strings, variables, operadores y literales), permitiendo un theming específico de DLUnire sin perder compatibilidad con temas de color de terceros.
-* Se agregó `repository.type: "git"` a los metadatos de `package.json`.
+* **Linter Semántico y Diagnósticos en Tiempo Real:** Motor de análisis sintáctico y semántico mediante autómata de estados finitos (FSM), validando tipos compatibles, variables no declaradas, redeclaraciones duplicadas y literales malformados (`DLUNIRE_SYNTAX_ERROR`).
+* **Expresiones Aritméticas y Comparaciones Lógicas:** Validación semántica de expresiones matemáticas (`+`, `-`, `*`, `/`) en tipos numéricos (`integer`, `float`, `numeric`) y expresiones de comparación (`<`, `>`) para variables de tipo `boolean`.
+* **Hover Provider con Bloques JSDoc/PHPDoc:** Extracción inteligente y renderizado en Markdown de bloques de documentación `/** ... */` al pasar el cursor sobre cualquier variable declarada.
+* **Formateador Automático de Documentos:** Implementación de `DocumentFormattingEditProvider` para normalizar declaraciones (`VARIABLE: tipo = valor`), preservar comentarios en línea y formatear bloques de documentación multilínea.
+* **Auto-Espaciado JSDoc:** Asistente en tiempo de edición que inserta el espacio faltante y centra el cursor al completar `/** | */`.
+* **Soporte Extendido de Archivos:** Asociación automática para extensiones `.type`, `.type.example`, `.env.type` y `.env.type.example`.
+* **Operador Aritmético `/` en Gramática:** Incorporación de división en la gramática TextMate para expresiones complejas.
+* **Scopes Personalizados `dlunire.*`:** Integración de selectores apilados junto a scopes estándar de TextMate para theming avanzado y retrocompatibilidad total.
+* **Metadatos de Repositorio:** Configuración de `repository.type: "git"` en `package.json`.
+
+### Corregido
+
+* Se corrigió el desajuste entre `grammars.scopeName` en `package.json` (`source.env.type`) y el `scopeName` real declarado en la gramática (`source.type`), que impedía que el resaltado de sintaxis se activara.
+* Se corrigió un typo en el patrón de `uuid` (`[0-f0-9]` → `[a-f0-9]`) que causaba fallos en el reconocimiento de UUIDs válidos.
+* Se corrigió un valor inválido de `lineComment` en `language-configuration.json` (era un objeto; VS Code requiere un string plano), restaurando el atajo `Ctrl+/` para comentar líneas.
+* Se corrigió la condición de disparo de IntelliSense en `CompletionItemProvider`: ahora se activa exclusivamente tras el delimitador `:` en la declaración de variables.
+* Se corrigió la referencia `path` de la gramática en `package.json` para coincidir con `syntaxes/dluniretype.tmLanguage.json`.
 
 ### Cambiado
 
-* Se refactorizó el `repository` de la gramática: de patrones duplicados y anclados a fin de línea por cada tipo, a tokens léxicos independientes (`variable`, `colon`, `type-keyword`, `operator-assign`, `operator-arithmetic` y literales), permitiendo que expresiones que referencian otras variables (ej. `RESULT: integer = COUNT + 25`) se tokenicen correctamente.
-* Se ajustó la lógica de inserción del autocompletado para evitar un espacio duplicado cuando el usuario ya había escrito uno después de `:`.
-* Se eliminó una verificación redundante `if (type in description)` en `extension.ts`, ya que siempre era verdadera por construcción.
+* Se refactorizó el `repository` de la gramática a tokens léxicos independientes (`variable`, `colon`, `types`, `operator-assign`, `operator-arithmetic` y literales), permitiendo el análisis de expresiones que referencian variables.
+* Se ajustó la lógica de inserción de autocompletado para evitar espacios dobles tras `:`.
+* Se optimizó el flujo de validación y limpieza de comentarios de bloque en `src/extension.ts`.
 
 ---
 
